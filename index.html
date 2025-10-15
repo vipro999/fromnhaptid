@@ -76,26 +76,11 @@
       resultDiv.innerHTML = "⏳";
 
       try {
-        const res = await fetch(`https://www.tiktok.com/@${username}?lang=en`, {
-          headers: { 'User-Agent': 'Mozilla/5.0' }
-        });
-        const html = await res.text();
-        const match = html.match(/<script id="SIGI_STATE" type="application\/json">(.*?)<\/script>/);
-        if (!match) throw new Error("Không tìm thấy tài khoản!");
+        // Dùng proxy để vượt chặn CORS
+        const proxyUrl = "https://api.allorigins.win/get?url=";
+        const tiktokUrl = encodeURIComponent(`https://www.tiktok.com/@${username}?lang=en`);
+        const res = await fetch(proxyUrl + tiktokUrl);
+        const data = await res.json();
+        const html = data.contents;
 
-        const data = JSON.parse(match[1]);
-        const user = data.UserModule.users[username.toLowerCase()];
-        if (!user) throw new Error("Không tìm thấy người dùng!");
-
-        resultDiv.innerHTML = `
-          <img src="${user.avatarLarger}" alt="Avatar" class="avatar">
-          <div class="username">@${user.uniqueId}</div>
-        `;
-      } catch (err) {
-        resultDiv.innerHTML = `<div class="error">⚠️ ${err.message}</div>`;
-      }
-    });
-  </script>
-
-</body>
-</html>
+        const match = html.match(/
