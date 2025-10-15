@@ -1,86 +1,257 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TikTok User Lookup</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chuyển Xu (Demo)</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #fff;
-      color: #111;
-      margin: 0;
-      padding: 40px 20px;
-      text-align: center;
+    :root{
+      --bg:#ffffff;
+      --accent:#ff004f;
+      --muted:#666;
+      --card:#fff;
+      --radius:12px;
     }
-    form {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial;
+      background:linear-gradient(180deg,#fff,#fbfbfc);
+      color:#111;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      padding:20px;
     }
-    input {
-      padding: 10px;
-      font-size: 16px;
-      width: 240px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      outline: none;
+
+    .card{
+      width:100%;
+      max-width:420px;
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:0 8px 30px rgba(0,0,0,0.07);
+      padding:20px;
     }
-    button {
-      padding: 10px 16px;
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
+
+    .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+    .logo {height:28px; width:auto}
+
+    h2{margin:8px 0 18px 0;font-size:18px}
+
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type="text"], input[type="number"]{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid #e6e6ea;
+      font-size:15px;
+      outline:none;
+      margin-bottom:14px;
     }
-    button:hover {
-      background: #222;
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    .btn {
+      display:inline-block;
+      width:100%;
+      text-align:center;
+      padding:12px 14px;
+      background:var(--accent);
+      color:#fff;
+      border:none;
+      border-radius:12px;
+      font-size:16px;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(255,0,79,0.18);
     }
-    .avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 8px;
+    .btn[disabled]{opacity:0.6;cursor:not-allowed;box-shadow:none}
+
+    .msg {
+      margin-top:14px;
+      padding:12px;
+      border-radius:10px;
+      background:#f6f6f8;
+      color:var(--muted);
+      text-align:center;
     }
-    .username {
-      font-weight: bold;
-      font-size: 16px;
+
+    /* success toast */
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:28px;
+      background:linear-gradient(90deg,#0bbf7b,#07a16a);
+      color:#fff;
+      padding:12px 18px;
+      border-radius:999px;
+      box-shadow:0 8px 30px rgba(7,161,106,0.18);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      font-weight:600;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .28s;
     }
-    .error {
-      color: red;
-      margin-top: 10px;
-      font-size: 14px;
+    .toast.show{opacity:1;pointer-events:auto}
+
+    .small{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+
+    .row {display:flex;gap:12px}
+    .col{flex:1}
+
+    /* modal simple */
+    .modal-backdrop{
+      position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s;
     }
+    .modal-backdrop.show{opacity:1;pointer-events:auto}
+    .modal{
+      width:calc(100% - 48px);max-width:420px;background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.25);
+    }
+    .modal p{margin:0 0 12px 0}
+    .modal .actions{display:flex;gap:10px;justify-content:flex-end}
+    .ghost{background:#f4f4f6;color:#111;border-radius:10px;padding:10px 12px;border:none;cursor:pointer}
   </style>
 </head>
 <body>
 
-  <form id="tiktokForm">
-    <input type="text" id="username" placeholder="Nhập TikTok ID" required>
-    <button type="submit">Tìm</button>
-  </form>
+  <div class="card" role="main" aria-labelledby="title">
+    <div class="logo-row">
+      <!-- nếu có logo cục repo, đổi src cho phù hợp -->
+      <img class="logo" src="./logo-tiktok.png" alt="logo">
+      <div style="flex:1">
+        <div style="font-size:13px;color:var(--muted)">Demo chuyển Xu</div>
+      </div>
+    </div>
 
-  <div id="result"></div>
+    <h2 id="title">Chuyển Xu tới TikTok</h2>
 
-  <script>
-    const form = document.getElementById('tiktokForm');
-    const resultDiv = document.getElementById('result');
+    <form id="form" onsubmit="return false;">
+      <label for="userid">TikTok ID</label>
+      <input id="userid" type="text" placeholder="Nhập TikTok ID (ví dụ: charlidamelio)" autocomplete="off" required>
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim().replace('@', '');
-      resultDiv.innerHTML = "⏳";
+      <label for="coins">Số lượng Xu</label>
+      <input id="coins" type="number" min="1" placeholder="Nhập số Xu" required>
 
-      try {
-        // Dùng proxy để vượt chặn CORS
-        const proxyUrl = "https://api.allorigins.win/get?url=";
-        const tiktokUrl = encodeURIComponent(`https://www.tiktok.com/@${username}?lang=en`);
-        const res = await fetch(proxyUrl + tiktokUrl);
-        const data = await res.json();
-        const html = data.contents;
+      <button id="sendBtn" class="btn" type="button">Chuyển</button>
 
-        const match = html.match(/
+      <div id="info" class="msg" style="display:none"></div>
+    </form>
+
+    <div class="small">Ghi chú: đây là **demo mô phỏng** — thao tác không thực hiện giao dịch thật.</div>
+  </div>
+
+  <!-- modal xác nhận -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" style="display:none">
+    <div class="modal" role="document">
+      <p id="modalText"></p>
+      <div class="actions">
+        <button id="cancelBtn" class="ghost">Huỷ</button>
+        <button id="confirmBtn" class="btn">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite">Đã chuyển</div>
+
+<script>
+  const userid = document.getElementById('userid');
+  const coins = document.getElementById('coins');
+  const sendBtn = document.getElementById('sendBtn');
+  const info = document.getElementById('info');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalText = document.getElementById('modalText');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const toast = document.getElementById('toast');
+
+  function showModal(text){
+    modalText.textContent = text;
+    modalBackdrop.style.display = 'flex';
+    // allow CSS transition
+    requestAnimationFrame(()=> modalBackdrop.classList.add('show'));
+  }
+  function hideModal(){
+    modalBackdrop.classList.remove('show');
+    setTimeout(()=> modalBackdrop.style.display='none', 220);
+  }
+
+  function showToast(text){
+    toast.textContent = text;
+    toast.classList.add('show');
+    setTimeout(()=> toast.classList.remove('show'), 3000);
+  }
+
+  function isValidId(v){
+    if(!v) return false;
+    // basic validation: no spaces, not purely numeric, length range
+    return /^[A-Za-z0-9._]{2,24}$/.test(v);
+  }
+
+  sendBtn.addEventListener('click', ()=>{
+    const idVal = userid.value.trim().replace(/^@+/, '');
+    const coinVal = parseInt(coins.value,10);
+
+    if(!isValidId(idVal)){
+      info.style.display='block';
+      info.textContent='Vui lòng nhập TikTok ID hợp lệ (không chứa kí tự khoảng trắng).';
+      return;
+    }
+    if(!coinVal || coinVal <= 0){
+      info.style.display='block';
+      info.textContent='Vui lòng nhập số Xu lớn hơn 0.';
+      return;
+    }
+
+    info.style.display='none';
+    showModal(`Bạn sẽ chuyển ${coinVal.toLocaleString()} Xu đến tài khoản @${idVal}. Xác nhận?`);
+  });
+
+  cancelBtn.addEventListener('click', hideModal);
+
+  confirmBtn.addEventListener('click', ()=>{
+    // simulate processing
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Đang chuyển...';
+    cancelBtn.disabled = true;
+
+    const idVal = userid.value.trim().replace(/^@+/, '');
+    const coinVal = parseInt(coins.value,10);
+
+    setTimeout(()=>{
+      // success
+      hideModal();
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Xác nhận';
+      cancelBtn.disabled = false;
+
+      // show success message and details
+      info.style.display = 'block';
+      info.style.background = '#e9fff3';
+      info.style.color = '#066a45';
+      info.textContent = `✅ Chuyển thành công ${coinVal.toLocaleString()} Xu tới @${idVal}.`;
+
+      // show toast
+      showToast(`Đã chuyển ${coinVal.toLocaleString()} Xu đến @${idVal}`);
+
+      // reset form (optional)
+      // userid.value = '';
+      // coins.value = '';
+
+    }, 900); // simulate delay
+  });
+
+  // accessibility: allow Enter to submit when focus on number input
+  coins.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ sendBtn.click(); }
+  });
+  userid.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ sendBtn.click(); }
+  });
+</script>
+
+</body>
+</html>
