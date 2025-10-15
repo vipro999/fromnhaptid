@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok User Lookup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      color: #111;
+      margin: 0;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    form {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      width: 240px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+    }
+    button {
+      padding: 10px 16px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #222;
+    }
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 8px;
+    }
+    .username {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <form id="tiktokForm">
+    <input type="text" id="username" placeholder="Nhập TikTok ID" required>
+    <button type="submit">Tìm</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('tiktokForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim().replace('@', '');
+      resultDiv.innerHTML = "⏳";
+
+      try {
+        const res = await fetch(`https://www.tiktok.com/@${username}?lang=en`, {
+          headers: { 'User-Agent': 'Mozilla/5.0' }
+        });
+        const html = await res.text();
+        const match = html.match(/<script id="SIGI_STATE" type="application\/json">(.*?)<\/script>/);
+        if (!match) throw new Error("Không tìm thấy tài khoản!");
+
+        const data = JSON.parse(match[1]);
+        const user = data.UserModule.users[username.toLowerCase()];
+        if (!user) throw new Error("Không tìm thấy người dùng!");
+
+        resultDiv.innerHTML = `
+          <img src="${user.avatarLarger}" alt="Avatar" class="avatar">
+          <div class="username">@${user.uniqueId}</div>
+        `;
+      } catch (err) {
+        resultDiv.innerHTML = `<div class="error">⚠️ ${err.message}</div>`;
+      }
+    });
+  </script>
+
+</body>
+</html>
